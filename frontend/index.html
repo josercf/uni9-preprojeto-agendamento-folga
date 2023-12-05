@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        .calendar-container {
+            max-width: 650px;
+            margin: 20px auto;
+        }
+        .calendar-day-header,
+        .calendar-day {
+            border: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            height: 80px;
+        }
+        .tag {
+            padding: 0.25em 0.5em;
+            background-color: #dc3545;
+            border-radius: 50%;
+            color: white;
+            font-size: 0.75em;
+            position: absolute;
+            top: 0.25em;
+            right: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div id="calendar" class="calendar"></div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function() {
+            buildCalendar();
+        });
+
+        function buildCalendar() {
+    //... (restante do código de inicialização do calendário)
+
+    fetch('http://demo9832729.mockable.io/folgas')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Supondo que data seja o objeto com as datas especiais recebidas
+            const specialDates = data;
+
+            // Aqui você colocaria o código de construção do calendário
+            // utilizando `specialDates`, como já foi feito anteriormente
+            renderCalendar(specialDates);
+        })
+        .catch(error => {
+            console.error('There was a problem fetching the special dates:', error);
+        });
+}
+
+function renderCalendar(specialDates) {
+    const monthNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+            let today = new Date(),
+                currentMonth = today.getMonth(),
+                currentYear = today.getFullYear(),
+                firstDay = new Date(currentYear, currentMonth, 1).getDay(),
+                daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate(),
+                $calendar = $('#calendar');
+    
+            let $headerRow = $('<div/>', { class: 'row' });
+            monthNames.forEach(function(day) {
+                $headerRow.append($('<div/>', { class: 'col text-center fw-bold', text: day }));
+            });
+            $calendar.append($headerRow);
+    
+            let $weekRow = $('<div/>', { class: 'row' });
+            for (let i = 0; i < firstDay; i++) {
+                $weekRow.append($('<div/>', { class: 'col calendar-day text-center' }));
+            }
+    
+            $calendar.append($weekRow); // Esta linha faltava no código anterior
+    
+            let dayCount = firstDay; // dayCount começa a partir do primeiro dia da semana
+            for (let day = 1; day <= daysInMonth; day++, dayCount++) {
+                if (dayCount % 7 === 0) {
+                    $weekRow = $('<div/>', { class: 'row' });
+                    $calendar.append($weekRow);
+                }
+    
+                let formattedDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                let $dayCell = $('<div/>', { class: 'col calendar-day text-center', text: day });
+    
+                if (specialDates[formattedDate]) {
+                    let $tag = $('<span/>', { class: 'tag', text: specialDates[formattedDate] });
+                    $dayCell.append($tag);
+                }
+    
+                $weekRow.append($dayCell);
+            }
+    
+            // Preencher as células vazias restantes até o final da semana
+            let cellsToAdd = 7 - dayCount % 7;
+            if (cellsToAdd > 0 && cellsToAdd < 7) {
+                for (let i = 0; i < cellsToAdd; i++) {
+                    $weekRow.append($('<div/>', { class: 'col calendar-day text-center' }));
+                }
+            }
+}
+
+    </script>
+</body>
+</html>
